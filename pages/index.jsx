@@ -1,6 +1,7 @@
 
 import {useState} from 'react';
 import NFTCard from "../components/nftCard";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 const Home = () => {
 
 	const [wallet,setWalletAddress] = useState("");
@@ -9,11 +10,11 @@ const Home = () => {
 	const [fetchForCollection,setFetchForCollection]=useState(false);
 	const [isLoading, setLoading] = useState(false);
 
+	const api_key = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
+
 	const fetchNFTs = async() =>{
 		let nfts;
 		console.log("Fetching NFTs");
-		const api_key = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
-		console.log(api_key);
 		const baseURL = `https://eth-mainnet.alchemyapi.io/v2/${api_key}/getNFTs/`;
 		var requestOptions = {
 			method: 'GET'
@@ -33,6 +34,9 @@ const Home = () => {
 		}
 	}
 
+	
+	
+
 	const fetchNFTsForCollection = async () =>{
 		if(collection.length){
 			var requestOptions = {
@@ -40,11 +44,33 @@ const Home = () => {
 				// mode:'no-cors',
 				// redirect: 'follow'
 			};
-			const api_key = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
 			const baseURL = `https://eth-mainnet.alchemyapi.io/v2/${api_key}/getNFTsForCollection/`
 			const fetchURL = `${baseURL}?contractAddress=${collection}&withMetadata=${"true"}`;
 			const nfts = await fetch(fetchURL,requestOptions).then(data=>data.json());
+			
+			if(nfts){
+				console.log("NFTs in collection: ",nfts);
+				setNFTs(nfts.nfts);
+			}
+		}
+	}
 
+	async function callGetNFTsForCollectionOnce(startToken = "") {
+		const baseURL = `https://eth-mainnet.alchemyapi.io/v2/${api_key}/getNFTsForCollection/`
+		const fetchURL = `${baseURL}/?contractAddress=${contractAddr}&startToken=${startToken}`;
+		const response = fetch(fetchURL,requestOptions).then(data=>data.json());
+		return response.data;
+	}
+
+	const fetchNFTsForCollectionPaginated = async () =>{
+		if(collection.length){
+			var requestOptions = {
+				method: "GET",
+				// mode:'no-cors',
+				// redirect: 'follow'
+			};
+			
+			
 			if(nfts){
 				console.log("NFTs in collection: ",nfts);
 				setNFTs(nfts.nfts);
@@ -82,7 +108,7 @@ const Home = () => {
 
 				<button 
 					disabled={isLoading}
-					className={"disabled:bg-slate-500 text-white bg-blue-400 px-4 py-2 mt-3 rounded-sm w-1/5"} 
+					className={"disabled:bg-slate-500 hover:bg-blue-700 text-white bg-blue-400 px-4 py-2 mt-3 rounded-sm w-1/5"} 
 					onClick={()=>{
 						if(fetchForCollection){
 							fetchNFTsForCollection();
@@ -95,9 +121,10 @@ const Home = () => {
 			</div>
 		<div className="flex flex-wrap gap-y-12 mt-4 w-5/6 gap-x-2 justify-center">
 		{isLoading ? <FontAwesomeIcon icon={faSpinner} spin size="4x"/> : 
-					NFTs.length && NFTs.map((nft, i) => {
+					NFTs.length && NFTs.map((nft,i) => {
 						return (
-							<NFTCard nft={nft} key={i}></NFTCard>
+							<NFTCard nft={nft} key={i}/> // Added key to get rid of the warning every child prop
+							// should have a key
 						)
 					})
 				}
