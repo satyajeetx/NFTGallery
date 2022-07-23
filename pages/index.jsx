@@ -35,8 +35,6 @@ const Home = () => {
 	}
 
 	
-	
-
 	const fetchNFTsForCollection = async () =>{
 		if(collection.length){
 			var requestOptions = {
