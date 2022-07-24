@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 import {useState} from 'react';
 import NFTCard from "../components/nftCard";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
