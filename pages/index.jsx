@@ -20,25 +20,67 @@ const Home = () => {
 		console.log("Fetching NFTs");
 		const baseURL = `https://eth-mainnet.alchemyapi.io/v2/${api_key}/getNFTs/`;
 		var requestOptions = {
-			method: 'GET'
+			method: 'GET',
+			redirect: 'follow'
 		};
-		if(!collection.length){
-			const fetchURL = `${baseURL}?owner=${wallet}`;
-			console.log("Fetching URL", fetchURL);
-			nfts = await fetch(fetchURL,requestOptions).then(data=>data.json());
-			if(nfts.pageKey){
-				console.log(pageKey);
-				setPageKey(nfts.pageKey);
+		// let hasNoCollectionExecuted = false;
+		// let hasCollectionExecuted = false;
+		if(pageKey==''){
+			console.log("fetchNFTs called without pageKey = ", pageKey);
+			if(!collection.length){
+				const fetchURL = `${baseURL}?owner=${wallet}`;
+				console.log("Fetching URL", fetchURL);
+				nfts = await fetch(fetchURL,requestOptions).then(data=>data.json());
+				if(nfts.pageKey){
+					console.log("pageKey = ",pageKey);
+					setPageKey(nfts.pageKey);
+				}
+				// hasNoCollectionExecuted = true;
+			}else{
+				console.log("Fetching NFTs for collection owned by address");
+				const fetchURL = `${baseURL}?owner=${wallet}&contractAddresses%5B%5D=${collection}`;
+				nfts = await fetch(fetchURL,requestOptions).then(data=>data.json());
+				if(nfts.pageKey){
+					console.log("pageKey = ",pageKey);
+					setPageKey(nfts.pageKey);
+				}
+				// hasCollectionExecuted = true;
 			}
-		}else{
-			console.log("Fetching NFTs for collection owned by address");
-			const fetchURL = `${baseURL}?owner=${wallet}&contractAddresses%5B%5D=${collection}`;
-			nfts = await fetch(fetchURL,requestOptions).then(data=>data.json());
-		}
-		if(nfts.totalCount>0){
-			console.log("nfts ",nfts);
 			setNFTs(nfts.ownedNfts);
+		}else{
+			console.log("fetchNFTs called with pageKey = ",pageKey);
+			if(!collection.length){
+				const fetchURL = `${baseURL}?owner=${wallet}?pageKey=${pageKey}`;
+				console.log("Fetching URL", fetchURL);
+				nfts = await fetch(fetchURL,requestOptions).then(data=>data.json());
+				if(nfts.pageKey){
+					console.log("pageKey = ",pageKey);
+					setPageKey(nfts.pageKey);
+				}else{
+					console.log("pageKey = ",pageKey);
+					setPageKey('');
+				}
+				// hasNoCollectionExecuted = true;
+			}else{
+				console.log("Fetching NFTs for collection owned by address");
+				const fetchURL = `${baseURL}?owner=${wallet}&contractAddresses%5B%5D=${collection}?pageKey=${pageKey}`;
+				nfts = await fetch(fetchURL,requestOptions).then(data=>data.json());
+				if(nfts.pageKey){
+					console.log("pageKey = ",pageKey);
+					setPageKey(nfts.pageKey);
+				}else{
+					console.log("pageKey = ",pageKey);
+					setPageKey('');
+				}
+				// hasCollectionExecuted = true;
+			}
+			setNFTs((NFTs) => NFTs.concat(nfts.ownedNfts));
 		}
+		
+		// if(nfts.totalCount>0){
+		// 	console.log("nfts ",nfts);
+		// 	setNFTs(nfts.ownedNfts);
+		// }
 	}
 
 
@@ -125,14 +167,44 @@ const Home = () => {
 						})
 				}
 			</div>
-			<p>
-				<button 
-					onClick={()=>fetchNFTsForCollection()}
-					className={"disabled:bg-slate-500 hover:bg-blue-700 text-white bg-blue-400 px-4 py-2 mt-3 rounded-sm w-full"} 
-				>
-					More
-				</button></p>
-			
+			<div className="flex flex-wrap gap-y-12 mt-4 w-5/6 gap-x-2 justify-center">
+				{
+					
+					startToken?
+						
+						<p>
+							<button 
+								className={"disabled:bg-slate-500 hover:bg-blue-700 text-white bg-blue-400 px-4 py-2 mt-3 rounded-sm w-full"}
+								onClick={()=>{
+									if(fetchForCollection){
+										fetchNFTsForCollection()
+									}else{
+										fetchNFTs()
+									}
+								}}
+								>
+								More
+							</button>
+						</p>
+						:
+						<></>
+				}
+				{
+					pageKey?
+						<p>
+							<button 
+								onClick={()=>{
+									fetchNFTs()
+								}}
+								className={"disabled:bg-slate-500 hover:bg-blue-700 text-white bg-blue-400 px-4 py-2 mt-3 rounded-sm w-full"} 
+								>
+								More
+							</button>
+						</p>
+						:
+						<></>
+				}
+			</div>
 		</div>
 	)
 	
