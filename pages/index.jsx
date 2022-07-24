@@ -50,7 +50,7 @@ const Home = () => {
 		}else{
 			console.log("fetchNFTs called with pageKey = ",pageKey);
 			if(!collection.length){
-				const fetchURL = `${baseURL}?owner=${wallet}?pageKey=${pageKey}`;
+				const fetchURL = `${baseURL}?owner=${wallet}&pageKey=${pageKey}`;
 				console.log("Fetching URL", fetchURL);
 				nfts = await fetch(fetchURL,requestOptions).then(data=>data.json());
 				if(nfts.pageKey){
@@ -63,7 +63,7 @@ const Home = () => {
 				// hasNoCollectionExecuted = true;
 			}else{
 				console.log("Fetching NFTs for collection owned by address");
-				const fetchURL = `${baseURL}?owner=${wallet}&contractAddresses%5B%5D=${collection}?pageKey=${pageKey}`;
+				const fetchURL = `${baseURL}?owner=${wallet}&contractAddresses%5B%5D=${collection}&pageKey=${pageKey}`;
 				nfts = await fetch(fetchURL,requestOptions).then(data=>data.json());
 				if(nfts.pageKey){
 					console.log("pageKey = ",pageKey);
